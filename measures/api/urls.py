@@ -4,5 +4,5 @@ from .views import *
 from rest_framework.authtoken import views
 
 urlpatterns = [
-    path('measures/measure', MeasureAPI.as_view(), name='new_measure'),  # Crear nueva medida 
+    path('measures/measure', MeasureAPI.as_view(), name='new_measure'),  # Crear u obtener medidas 
 ]

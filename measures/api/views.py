@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from users.models import User
+from ..models import Measure
 from .serializer import MeasureSerializer
 from rest_framework.response import Response
 from utils import http_response
@@ -11,8 +12,19 @@ import cloudinary.api
 
 # Create your views here.   
 class MeasureAPI(APIView):
+
+    def get(self, request):
+        if 'user' in request.query_params:
+            measures = Measure.objects.filter(patient=request.query_params['user'])
+            serializer = MeasureSerializer(measures, many=True)
+            return Response(http_response.format_response_success(serializer.data), status=status.HTTP_200_OK)
+        else: 
+            measures = Measure.objects.all()
+            serializer = MeasureSerializer(measures, many=True)
+            return Response(http_response.format_response_success(serializer.data), status=status.HTTP_200_OK)
+
     def post(self, request):
-        user = User.objects.filter(id=request.data['user_id']).first()   #a diferencia de un get esto no devuelve error si no encuentra nada
+        user = User.objects.filter(id=request.data['user_id']).first() 
         data = {}
         if 'measure_picture' in request.data:
             image_base64 = request.data['measure_picture']
