@@ -1,3 +1,7 @@
 from django.contrib import admin
+from . import models
 
-# Register your models here.
+class MeasureAdmin(admin.ModelAdmin):
+    readonly_fields = ('creation_date',)
+
+admin.site.register(models.Measure, MeasureAdmin)

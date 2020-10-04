@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'users',
     'measures',
+    'cloudinary'
 ]
 
 MIDDLEWARE = [
@@ -129,7 +130,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
@@ -141,5 +141,11 @@ STATICFILES_DIRS = (
 )
 
 AUTH_USER_MODEL = 'users.User'
+
+CLOUDINARY = {
+    'cloud_name': 'dobghm44l',
+    'api_key': '433154285966656',
+    'api_secret': 'DNdZ_K36te5H_RlHuwAYBrGIr0s',
+}
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
