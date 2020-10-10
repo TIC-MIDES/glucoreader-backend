@@ -39,7 +39,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         ('P', 'Paciente'),
     )
 
-    cedula = models.IntegerField(unique=True)
+    cedula = models.CharField(unique=True, max_length=10)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     email = models.EmailField(max_length=255, unique=True, blank=True, null=True)
