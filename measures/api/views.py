@@ -44,8 +44,12 @@ class MeasureAPI(APIView):
                 value = ''
                 for digit in digits:
                     value += digit
-                measure.value = float(value)
-                measure.save()
+                try:
+                    measure.value = float(value)
+                    measure.save()
+                except:
+                    return Response(http_response.format_response_failure('Error al reconocer los digitos'),
+                                    status=status.HTTP_400_BAD_REQUEST)
             else: 
                 return Response(http_response.format_response_failure(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
 
