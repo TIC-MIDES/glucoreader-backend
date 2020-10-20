@@ -19,7 +19,7 @@ DIGITS_LOOKUP = {
     (0, 0, 0, 0, 0, 1, 1): '-'
 }
 H_W_Ratio = 1.9
-THRESHOLD = 30
+THRESHOLD = 25
 arc_tan_theta = 6.0  # 数码管倾斜角度
 crop_y0 = 215
 crop_y1 = 470
