@@ -43,7 +43,7 @@ class MeasureAPI(APIView):
                 digits = hf.recognize_digits(img_url=measure.photo)
                 value = ''
                 for digit in digits:
-                    value += digit
+                    value += str(digit)
                 try:
                     measure.value = float(value)
                     measure.save()
@@ -53,7 +53,9 @@ class MeasureAPI(APIView):
             else: 
                 return Response(http_response.format_response_failure(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
 
-            return Response(http_response.format_response_success("Se subió correctamente"), status=status.HTTP_200_OK)
+            response_data = MeasureSerializer(measure).data
+
+            return Response(http_response.format_response_success(response_data), status=status.HTTP_200_OK)
         else:
             return Response(http_response.format_response_failure("No se recibió ninguna imagen"), status=status.HTTP_400_BAD_REQUEST)
 
