@@ -46,8 +46,13 @@ INSTALLED_APPS = [
     'corsheaders',
     'users',
     'measures',
+    'knox',
     'cloudinary'
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',)
+}
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
