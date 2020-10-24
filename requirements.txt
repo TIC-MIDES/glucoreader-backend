@@ -1,12 +1,15 @@
 asgiref==3.2.10
 certifi==2020.6.20
+cffi==1.14.3
 cloudinary==1.20.0
+cryptography==3.1.1
 cycler==0.10.0
 decorator==4.4.2
 dj-database-url==0.5.0
 Django==3.1.1
 django-cors-headers==3.5.0
 django-environ==0.4.5
+django-filter==2.4.0
 django-heroku==0.3.1
 django-rest-knox==4.1.0
 djangorestframework==3.11.1
@@ -16,9 +19,11 @@ kiwisolver==1.2.0
 matplotlib==3.3.2
 networkx==2.5
 numpy==1.19.2
+opencv-python==4.4.0.44
 opencv-python-headless==4.4.0.44
 Pillow==7.2.0
 psycopg2==2.8.6
+pycparser==2.20
 pyparsing==2.4.7
 python-dateutil==2.8.1
 pytz==2020.1

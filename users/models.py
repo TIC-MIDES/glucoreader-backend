@@ -43,7 +43,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     email = models.EmailField(max_length=255, unique=True, blank=True, null=True)
-    doctor = models.ForeignKey('self', on_delete=models.SET_NULL, null=True)
+    doctor = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
     type = models.CharField(max_length=1, choices=USER_TYPE)
     creation_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(auto_now=True)

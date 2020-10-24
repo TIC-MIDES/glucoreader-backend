@@ -46,8 +46,9 @@ INSTALLED_APPS = [
     'corsheaders',
     'users',
     'measures',
+    'cloudinary',
+    'django_filters',
     'knox',
-    'cloudinary'
 ]
 
 REST_FRAMEWORK = {

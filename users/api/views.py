@@ -2,12 +2,15 @@ from rest_framework.response import Response
 from .serializers import *
 from rest_framework.views import APIView
 from utils import http_response
-
 from ..models import User
 from rest_framework import generics
 from knox.views import LoginView as KnoxLoginView
 from knox.models import AuthToken
 from knox.settings import knox_settings
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.decorators import permission_classes
+from django_filters import rest_framework as filters
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
 """View para hacer el login de un usuario"""
 class LoginAPI(KnoxLoginView):
@@ -38,3 +41,18 @@ class LoginAPI(KnoxLoginView):
         }
 
         return Response(http_response.format_response_success(data))
+
+
+"""View para obtener todos los usuarios pertenecientes a un médico"""
+@permission_classes([IsAuthenticated])
+class UsersDoctorAPI(generics.ListAPIView):
+    serializer_class = UserDataSerializer
+    filter_backends = (filters.DjangoFilterBackend,
+                       SearchFilter, OrderingFilter)
+    filter_fields = ["email", 'first_name', 'last_name']
+    search_fields = ['$email', '$first_name', '$last_name']
+    ordering_fields = ["email", 'first_name', 'last_name',]
+
+    def get_queryset(self):  # funciona como get
+        users = User.objects.filter(doctor=self.request.user.id)
+        return users
