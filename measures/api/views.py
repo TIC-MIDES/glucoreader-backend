@@ -1,5 +1,4 @@
 from django.http import HttpResponseBadRequest
-from django.shortcuts import render
 from rest_framework.views import APIView
 from users.models import User
 from ..models import Measure
@@ -7,10 +6,9 @@ from .serializer import MeasureSerializer
 from rest_framework.response import Response
 from utils import http_response
 from rest_framework.exceptions import *
-
 from utils import helper_functions as hf
 
-# Create your views here.   
+
 class MeasureAPI(APIView):
 
     def get(self, request):
