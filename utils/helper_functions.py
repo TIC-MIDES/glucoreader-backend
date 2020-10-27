@@ -40,7 +40,10 @@ def recognize_digits(img_url):
     threshold = 15
     results_list = []
     while threshold <= 90:
-        digits = ssocr.process(buf, threshold)
+        try:
+            digits = ssocr.process(buf, threshold)
+            results_list.append(digits)
+        except Exception:
+            pass
         threshold += 5
-        results_list.append(digits)
     return results_list

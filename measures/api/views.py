@@ -56,7 +56,7 @@ class MeasureAPI(APIView):
                 print(values_dict)
 
                 if len(values_dict) > 1:    # Se reconocieron digitos distintos
-                    ordered_values_dict = {k: v for k, v in sorted(values_dict.items(), key=lambda item: item[1])}
+                    ordered_values_dict = {k: v for k, v in sorted(values_dict.items(), key=lambda item: item[1], reverse=True)}
                     items_list = list(ordered_values_dict.items())
                     if items_list[0][1] > items_list[1][1]: # Si hay un unico valor con numero de coincidencias max
                         measure.value = items_list[0][0]
