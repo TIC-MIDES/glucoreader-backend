@@ -66,6 +66,7 @@ class MeasureAPI(APIView):
                                         status=status.HTTP_400_BAD_REQUEST)
                 elif len(values_dict) == 1:
                     measure.value = list(values_dict.keys())[0] # Se guarda el unico valor reconocido
+                    measure.save()
                 else:
                     return Response(http_response.format_response_failure('Error al reconocer los digitos'),
                                     status=status.HTTP_400_BAD_REQUEST)
