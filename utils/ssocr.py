@@ -19,7 +19,7 @@ DIGITS_LOOKUP = {
     (0, 0, 0, 0, 0, 1, 1): '-'
 }
 H_W_Ratio = 1.9
-THRESHOLD = 60
+# THRESHOLD = 20 AHORA ES PARAMETRO DE PROCESS()
 arc_tan_theta = 6.0  # 数码管倾斜角度
 crop_y0 = 215
 crop_y1 = 470
@@ -264,18 +264,17 @@ def recognize_digits_line_method(digits_positions, output_img, input_img):
     return digits
 
 
-def process(buf, show=False):
+def process(buf, threshold, show=False):
     # args = parser.parse_args()
     blurred, gray_img = load_image(buf, show=show)
     output = blurred
-    dst = preprocess(blurred, THRESHOLD, show=show)
+    dst = preprocess(blurred, threshold, show=show)
     digits_positions = find_digits_positions(dst)
     digits = recognize_digits_line_method(digits_positions, output, dst)
     if show:
         cv2.imshow('output', output)
         cv2.waitKey()
         cv2.destroyAllWindows()
-    print(digits)
 
     return digits
 #

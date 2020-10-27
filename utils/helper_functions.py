@@ -37,4 +37,10 @@ def save_image_cloud(user, img_base64):
 def recognize_digits(img_url):
     img = urllib.urlopen(img_url)
     buf = np.asarray(bytearray(img.read()), dtype="uint8")
-    return ssocr.process(buf)
+    threshold = 15
+    results_list = []
+    while threshold <= 90:
+        digits = ssocr.process(buf, threshold)
+        threshold += 5
+        results_list.append(digits)
+    return results_list
