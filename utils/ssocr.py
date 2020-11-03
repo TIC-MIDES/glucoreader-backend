@@ -20,6 +20,7 @@ DIGITS_LOOKUP = {
 }
 H_W_Ratio = 1.9
 # THRESHOLD = 20 AHORA ES PARAMETRO DE PROCESS()
+THRESHOLDS = range(5, 90, 5)
 arc_tan_theta = 6.0  # 数码管倾斜角度
 crop_y0 = 215
 crop_y1 = 470
@@ -65,7 +66,7 @@ def preprocess(img, threshold, show=False, kernel_size=(5, 5)):
     return dst
 
 
-def helper_extract(one_d_array, threshold=20):
+def helper_extract(one_d_array, threshold=10):
     res = []
     flag = 0
     temp = 0
@@ -90,7 +91,7 @@ def helper_extract(one_d_array, threshold=20):
     return res
 
 
-def find_digits_positions(img, reserved_threshold=20):
+def find_digits_positions(img, reserved_threshold=10):
     # cnts = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     # digits_positions = []
     # for c in cnts[1]:
@@ -264,18 +265,17 @@ def recognize_digits_line_method(digits_positions, output_img, input_img):
     return digits
 
 
-def process(buf, threshold, show=False):
+def process(buf, threshold1, threshold2, show=False):
     # args = parser.parse_args()
     blurred, gray_img = load_image(buf, show=show)
     output = blurred
-    dst = preprocess(blurred, threshold, show=show)
-    digits_positions = find_digits_positions(dst)
+    dst = preprocess(blurred, threshold1, show=show)
+    digits_positions = find_digits_positions(dst, threshold2)
     digits = recognize_digits_line_method(digits_positions, output, dst)
     if show:
         cv2.imshow('output', output)
         cv2.waitKey()
         cv2.destroyAllWindows()
-
     return digits
 #
 #

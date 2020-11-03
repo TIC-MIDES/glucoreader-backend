@@ -37,13 +37,14 @@ def save_image_cloud(user, img_base64):
 def recognize_digits(img_url):
     img = urllib.urlopen(img_url)
     buf = np.asarray(bytearray(img.read()), dtype="uint8")
-    threshold = 15
+    threshold_range = range(5, 90, 5)
     results_list = []
-    while threshold <= 90:
-        try:
-            digits = ssocr.process(buf, threshold)
-            results_list.append(digits)
-        except Exception:
-            pass
-        threshold += 5
+    for th1 in threshold_range:
+        for th2 in threshold_range:
+            try:
+                digits_array = ssocr.process(buf, th1, th2)
+                results_list.append(digits_array)
+            except Exception:
+                pass
+
     return results_list
