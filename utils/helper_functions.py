@@ -42,9 +42,32 @@ def recognize_digits(img_url):
     for th1 in threshold_range:
         for th2 in threshold_range:
             try:
-                digits_array = ssocr.process(buf, th1, th2)
-                results_list.append(digits_array)
+                digits_tuple = (ssocr.process_gauss(buf, th1, th2), ssocr.process_mean(buf, th1, th2))
+                results_list.append(digits_tuple)
             except Exception:
                 pass
-
+    print(len(results_list))
     return results_list
+
+
+def build_dict(results_list):
+    values_dict = {}
+    iter = 0
+    for digit_tuple in results_list:
+        for digit_list in digit_tuple:
+            value = ''
+            for digit in digit_list:
+                iter += 1
+                value += str(digit)
+            try:
+                float_value = float(value)
+                if float_value in values_dict:
+                    if values_dict[float_value] >= 20:
+                        return values_dict
+                    values_dict[float_value] += 1
+                else:
+                    values_dict[float_value] = 0
+            except:
+                print(value)
+    print(iter)
+    return values_dict

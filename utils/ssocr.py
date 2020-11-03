@@ -20,7 +20,7 @@ DIGITS_LOOKUP = {
 }
 H_W_Ratio = 1.9
 # THRESHOLD = 20 AHORA ES PARAMETRO DE PROCESS()
-THRESHOLDS = range(5, 90, 5)
+# THRESHOLDS = range(5, 90, 5)
 arc_tan_theta = 6.0  # 数码管倾斜角度
 crop_y0 = 215
 crop_y1 = 470
@@ -49,12 +49,30 @@ def load_image(buf, show=False):
     return blurred, gray_img
 
 
-def preprocess(img, threshold, show=False, kernel_size=(5, 5)):
+def preprocess_gauss(img, threshold, show=False, kernel_size=(5, 5)):
+    # 直方图局部均衡化
+    clahe = cv2.createCLAHE(clipLimit=2, tileGridSize=(6, 6))
+    img = clahe.apply(img)
+    # 自适应阈值二值化
+    # dst = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 127, threshold)
+    dst = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 127, threshold)
+    # 闭运算开运算
+    kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, kernel_size)
+    dst = cv2.morphologyEx(dst, cv2.MORPH_CLOSE, kernel)
+    dst = cv2.morphologyEx(dst, cv2.MORPH_OPEN, kernel)
+
+    if show:
+        cv2.imshow('equlizeHist', img)
+        cv2.imshow('threshold', dst)
+    return dst
+
+def preprocess_mean(img, threshold, show=False, kernel_size=(5, 5)):
     # 直方图局部均衡化
     clahe = cv2.createCLAHE(clipLimit=2, tileGridSize=(6, 6))
     img = clahe.apply(img)
     # 自适应阈值二值化
     dst = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 127, threshold)
+    # dst = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 127, threshold)
     # 闭运算开运算
     kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, kernel_size)
     dst = cv2.morphologyEx(dst, cv2.MORPH_CLOSE, kernel)
@@ -265,11 +283,24 @@ def recognize_digits_line_method(digits_positions, output_img, input_img):
     return digits
 
 
-def process(buf, threshold1, threshold2, show=False):
+def process_gauss(buf, threshold1, threshold2, show=False):
     # args = parser.parse_args()
     blurred, gray_img = load_image(buf, show=show)
     output = blurred
-    dst = preprocess(blurred, threshold1, show=show)
+    dst = preprocess_gauss(blurred, threshold1, show=show)
+    digits_positions = find_digits_positions(dst, threshold2)
+    digits = recognize_digits_line_method(digits_positions, output, dst)
+    if show:
+        cv2.imshow('output', output)
+        cv2.waitKey()
+        cv2.destroyAllWindows()
+    return digits
+
+def process_mean(buf, threshold1, threshold2, show=False):
+    # args = parser.parse_args()
+    blurred, gray_img = load_image(buf, show=show)
+    output = blurred
+    dst = preprocess_mean(blurred, threshold1, show=show)
     digits_positions = find_digits_positions(dst, threshold2)
     digits = recognize_digits_line_method(digits_positions, output, dst)
     if show:

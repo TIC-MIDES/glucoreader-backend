@@ -39,20 +39,7 @@ class MeasureAPI(APIView):
                 measure = serializer.create(serializer.validated_data)
                 #Reconocer valor de la medida y guardar resultado:
                 results_list = hf.recognize_digits(img_url=measure.photo)
-                values_dict = {} # La medida es la key y el numero de coincidencias es el value
-                for digit_list in results_list:
-                    value = ''
-                    for digit in digit_list:
-                        value += str(digit)
-                    try:
-                        float_value = float(value)
-                        if float_value in values_dict:
-                            values_dict[float_value] += 1
-                        else:
-                            values_dict[float_value] = 0
-                    except:
-                        print(value)
-
+                values_dict = hf.build_dict(results_list) # La medida es la key y el numero de coincidencias es el value
                 print(values_dict)
 
                 if len(values_dict) > 1:    # Se reconocieron digitos distintos
