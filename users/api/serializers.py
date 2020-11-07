@@ -25,5 +25,5 @@ class UserDataSerializer(serializers.ModelSerializer):
 class PatientDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'considerations', 'min_threshold', 'max_threshold')
+        fields = ('id', 'first_name', 'last_name', 'considerations', 'min_threshold', 'max_threshold')
 
