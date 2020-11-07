@@ -56,3 +56,18 @@ class UsersDoctorAPI(generics.ListAPIView):
     def get_queryset(self):  # funciona como get
         users = User.objects.filter(doctor=self.request.user.id)
         return users
+
+
+"""View para obtener los datos de un paciente"""
+# @permission_classes([IsAuthenticated])
+class PatientDataAPI(generics.ListAPIView):
+    serializer_class = PatientDataSerializer
+    # filter_backends = (filters.DjangoFilterBackend,
+    #                    SearchFilter, OrderingFilter)
+    # filter_fields = ["email", 'first_name', 'last_name']
+    # search_fields = ['$email', '$first_name', '$last_name']
+    # ordering_fields = ["email", 'first_name', 'last_name',]
+
+    def get_queryset(self):  # funciona como get
+        user = User.objects.filter(cedula=self.request.query_params['cedula'])
+        return user

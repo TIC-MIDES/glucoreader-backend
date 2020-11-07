@@ -21,3 +21,9 @@ class UserDataSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'email', 'first_name', 'last_name', 'cedula', 'type')
 
+
+class PatientDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'considerations', 'min_threshold', 'max_threshold')
+
