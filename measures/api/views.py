@@ -43,11 +43,15 @@ class MeasureAPI(APIView):
                 print(values_dict)
 
                 if len(values_dict) > 1:    # Se reconocieron digitos distintos
-                    ordered_values_dict = {k: v for k, v in sorted(values_dict.items(), key=lambda item: item[1], reverse=True)}
+                    ordered_values_dict = {k: v for k, v in sorted(values_dict.items(), key=lambda item: item[1], reverse=True)}    #Ordeno el diccionario
                     items_list = list(ordered_values_dict.items())
-                    if items_list[0][1] > items_list[1][1]: # Si hay un unico valor con numero de coincidencias max
-                        measure.value = items_list[0][0]
-                    else:
+                    for i in range(len(items_list)):
+                        print(items_list[i][0])
+                        if 10 < items_list[i][0] < 400: # El primer valor que este en este rango lo guardamos
+                            measure.value = items_list[i][0]
+                            break
+
+                    if not measure.value:
                         return Response(http_response.format_response_failure('Error al reconocer los digitos'),
                                         status=status.HTTP_400_BAD_REQUEST)
                 elif len(values_dict) == 1:
@@ -57,7 +61,7 @@ class MeasureAPI(APIView):
                                     status=status.HTTP_400_BAD_REQUEST)
             else: 
                 return Response(http_response.format_response_failure(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
-            if 50 < measure.value < 300:
+            if 10 < measure.value < 400:
                 measure.save()
             else:
                 return Response(http_response.format_response_failure('Error al reconocer los digitos'),
