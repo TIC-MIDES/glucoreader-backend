@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from utils import http_response
 from rest_framework.exceptions import *
 from utils import helper_functions as hf
+from utils.email import Email
 
 
 class MeasureAPI(APIView):
@@ -47,7 +48,7 @@ class MeasureAPI(APIView):
                     items_list = list(ordered_values_dict.items())
                     for i in range(len(items_list)):
                         print(items_list[i][0])
-                        if 10 < items_list[i][0] < 400: # El primer valor que este en este rango lo guardamos
+                        if 10 < items_list[i][0] < 500: # El primer valor que este en este rango lo guardamos
                             measure.value = items_list[i][0]
                             break
 
@@ -61,8 +62,10 @@ class MeasureAPI(APIView):
                                     status=status.HTTP_400_BAD_REQUEST)
             else: 
                 return Response(http_response.format_response_failure(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
-            if 10 < measure.value < 400:
+            if 10 < measure.value < 500:
                 measure.save()
+                if measure.value < user.min_threshold or measure.value > user.max_threshold:
+                    Email.send_email(measure)
             else:
                 return Response(http_response.format_response_failure('Error al reconocer los digitos'),
                                 status=status.HTTP_400_BAD_REQUEST)
