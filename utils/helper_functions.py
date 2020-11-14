@@ -37,10 +37,12 @@ def save_image_cloud(user, img_base64):
 def recognize_digits(img_url):
     img = urllib.urlopen(img_url)
     buf = np.asarray(bytearray(img.read()), dtype="uint8")
-    threshold_range = range(-10, 100, 5)
+    threshold_range = range(20, 100, 5)
+    threshold_range2 = range(-30, 20, 5)
+
     results_list = []
     for th1 in threshold_range:
-        for th2 in threshold_range:
+        for th2 in threshold_range2:
             try:
                 digits_tuple = (ssocr.process_gauss(buf, th1, th2), ssocr.process_mean(buf, th1, th2))
                 results_list.append(digits_tuple)
