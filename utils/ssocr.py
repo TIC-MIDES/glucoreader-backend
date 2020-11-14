@@ -55,7 +55,7 @@ def preprocess_gauss(img, threshold, show=False, kernel_size=(5, 5)):
     img = clahe.apply(img)
     # 自适应阈值二值化
     # dst = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 127, threshold)
-    dst = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 227, threshold)
+    dst = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 127, threshold)
     # 闭运算开运算
     kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, kernel_size)
     dst = cv2.morphologyEx(dst, cv2.MORPH_CLOSE, kernel)
@@ -71,7 +71,7 @@ def preprocess_mean(img, threshold, show=False, kernel_size=(5, 5)):
     clahe = cv2.createCLAHE(clipLimit=2, tileGridSize=(6, 6))
     img = clahe.apply(img)
     # 自适应阈值二值化
-    dst = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 227, threshold)
+    dst = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 127, threshold)
     # dst = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 127, threshold)
     # 闭运算开运算
     kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, kernel_size)
@@ -94,7 +94,7 @@ def helper_extract(one_d_array, threshold=10):
                 start = i - flag
                 end = i
                 temp = end
-                if end - start > 10:
+                if end - start > 15:
                     res.append((start, end))
             flag = 0
         else:
