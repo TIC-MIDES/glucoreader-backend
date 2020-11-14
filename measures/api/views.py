@@ -40,6 +40,7 @@ class MeasureAPI(APIView):
                 measure = serializer.create(serializer.validated_data)
                 #Reconocer valor de la medida y guardar resultado:
                 results_list = hf.recognize_digits(img_url=measure.photo)
+                print(results_list)
                 values_dict = hf.build_dict(results_list) # La medida es la key y el numero de coincidencias es el value
                 print(values_dict)
 
@@ -47,7 +48,6 @@ class MeasureAPI(APIView):
                     ordered_values_dict = {k: v for k, v in sorted(values_dict.items(), key=lambda item: item[1], reverse=True)}    #Ordeno el diccionario
                     items_list = list(ordered_values_dict.items())
                     for i in range(len(items_list)):
-                        print(items_list[i][0])
                         if 10 < items_list[i][0] < 500: # El primer valor que este en este rango lo guardamos
                             measure.value = items_list[i][0]
                             break

@@ -46,18 +46,15 @@ def recognize_digits(img_url):
                 results_list.append(digits_tuple)
             except Exception:
                 pass
-    print(len(results_list))
     return results_list
 
 
 def build_dict(results_list):
     values_dict = {}
-    iter = 0
     for digit_tuple in results_list:
         for digit_list in digit_tuple:
             value = ''
             for digit in digit_list:
-                iter += 1
                 value += str(digit)
             try:
                 float_value = float(value)
@@ -68,6 +65,5 @@ def build_dict(results_list):
                 else:
                     values_dict[float_value] = 0
             except:
-                print(value)
-    print(iter)
+                pass
     return values_dict

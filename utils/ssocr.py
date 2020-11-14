@@ -196,7 +196,7 @@ def recognize_digits_area_method(digits_positions, output_img, input_img):
             # plt.show()
             total = cv2.countNonZero(seg_roi)
             area = (xb - xa) * (yb - ya) * 0.9
-            print(total / float(area))
+            # print(total / float(area))
             if total / float(area) > 0.45:
                 on[i] = 1
 
