@@ -62,8 +62,8 @@ def build_dict(results_list):
             try:
                 float_value = float(value)
                 if float_value in values_dict:
-                    if values_dict[float_value] >= 20:
-                        return values_dict
+                    # if values_dict[float_value] >= 20:
+                    #     return values_dict
                     values_dict[float_value] += 1
                 else:
                     values_dict[float_value] = 0
