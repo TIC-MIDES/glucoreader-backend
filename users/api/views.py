@@ -3,7 +3,7 @@ from .serializers import *
 from rest_framework.views import APIView
 from utils import http_response
 from ..models import User
-from rest_framework import generics
+from rest_framework import generics, status
 from knox.views import LoginView as KnoxLoginView
 from knox.models import AuthToken
 from knox.settings import knox_settings
@@ -42,6 +42,19 @@ class LoginAPI(KnoxLoginView):
 
         return Response(http_response.format_response_success(data))
 
+class RegisterAPI(APIView):
+    def post(self, request):
+        if 'doctor' not in request.data and request.data['type'] == 'P':
+            request.data['doctor'] = request.user.id
+        serializer = RegisterUserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.create(serializer.validated_data)
+            response_data = RegisterUserSerializer(user).data
+            return Response(http_response.format_response_success(response_data), status=status.HTTP_200_OK)
+        else:
+            return Response(http_response.format_response_failure(serializer.errors),
+                            status=status.HTTP_400_BAD_REQUEST)
+
 
 """View para obtener todos los usuarios pertenecientes a un médico"""
 @permission_classes([IsAuthenticated])
@@ -71,3 +84,12 @@ class PatientDataAPI(generics.ListAPIView):
     def get_queryset(self):  # funciona como get
         user = User.objects.filter(cedula=self.request.query_params['cedula'])
         return user
+
+
+"""Obtener todos los doctores"""
+class DoctorsAPI(generics.ListAPIView):
+    serializer_class = UserDataSerializer
+
+    def get_queryset(self):
+        doctors = User.objects.filter(type='D')
+        return doctors
