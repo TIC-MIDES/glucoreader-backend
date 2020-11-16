@@ -94,7 +94,7 @@ def helper_extract(one_d_array, threshold=10):
                 start = i - flag
                 end = i
                 temp = end
-                if end - start > 15:
+                if end - start > 20:
                     res.append((start, end))
             flag = 0
         else:

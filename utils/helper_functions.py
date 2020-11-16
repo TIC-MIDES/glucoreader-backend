@@ -40,10 +40,10 @@ def recognize_digits(img_url):
 
     im = Image.open(BytesIO(img.read()))
     enhancer = ImageEnhance.Brightness(im)
-    factor = range(1, 5, 1) # change the brightness
+    factor = range(1, 6, 1) # change the brightness
 
-    threshold_range = range(20, 100, 10)
-    threshold_range2 = range(-30, 20, 10)
+    threshold_range = range(20, 80, 10)
+    threshold_range2 = range(-40, 20, 10)
 
     results_list = []
     for brightness in factor:
