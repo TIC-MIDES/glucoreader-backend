@@ -9,7 +9,10 @@ class MeasureTest(APITestCase):
             "https://res.cloudinary.com/dobghm44l/image/upload/v1605553577/Measures/47976654/16-11-2020%2016:06:17:211892.png",
             "https://res.cloudinary.com/dobghm44l/image/upload/v1605552208/Measures/47976654/16-11-2020%2015:43:28:648514.png",
             "https://res.cloudinary.com/dobghm44l/image/upload/v1605552106/Measures/47976654/16-11-2020%2015:41:46:165034.png",
-            "https://res.cloudinary.com/dobghm44l/image/upload/v1605552010/Measures/47976654/16-11-2020%2015:40:10:608376.png"]
+            "https://res.cloudinary.com/dobghm44l/image/upload/v1605552010/Measures/47976654/16-11-2020%2015:40:10:608376.png",
+            "https://res.cloudinary.com/dobghm44l/image/upload/v1605556977/Measures/47976654/16-11-2020%2017:02:57:722117.png",
+            # "http://res.cloudinary.com/dobghm44l/image/upload/v1605557558/Measures/47976654/16-11-2020%2017:12:38:643517.png",
+            ]
 
     def test_new_measure(self):
         for photo in self.photos:
