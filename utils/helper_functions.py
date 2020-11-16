@@ -7,7 +7,8 @@ from . import ssocr
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-
+from PIL import Image, ImageEnhance
+from io import BytesIO
 
 def save_image_locally(cedula, image_base64):
     img_name = cedula + " > " + datetime.now().strftime("%d%m%Y %H:%M:%S:%f")
@@ -36,18 +37,27 @@ def save_image_cloud(user, img_base64):
 
 def recognize_digits(img_url):
     img = urllib.urlopen(img_url)
-    buf = np.asarray(bytearray(img.read()), dtype="uint8")
-    threshold_range = range(20, 100, 5)
-    threshold_range2 = range(-30, 20, 5)
+
+    im = Image.open(BytesIO(img.read()))
+    enhancer = ImageEnhance.Brightness(im)
+    factor = range(1, 5, 1) # change the brightness
+
+    threshold_range = range(20, 100, 10)
+    threshold_range2 = range(-30, 20, 10)
 
     results_list = []
-    for th1 in threshold_range:
-        for th2 in threshold_range2:
-            try:
-                digits_tuple = (ssocr.process_gauss(buf, th1, th2), ssocr.process_mean(buf, th1, th2))
-                results_list.append(digits_tuple)
-            except Exception:
-                pass
+    for brightness in factor:
+        im_output = enhancer.enhance(brightness)
+        buffered = BytesIO()
+        im_output.save(buffered, format="png")
+        buf = np.asarray(bytearray(buffered.getvalue()), dtype="uint8")
+        for th1 in threshold_range:
+            for th2 in threshold_range2:
+                try:
+                    digits_tuple = (ssocr.process_gauss(buf, th1, th2), ssocr.process_mean(buf, th1, th2))
+                    results_list.append(digits_tuple)
+                except Exception:
+                    pass
     return results_list
 
 
