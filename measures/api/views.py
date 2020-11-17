@@ -48,7 +48,7 @@ class MeasureAPI(APIView):
                     ordered_values_dict = {k: v for k, v in sorted(values_dict.items(), key=lambda item: item[1], reverse=True)}    #Ordeno el diccionario
                     items_list = list(ordered_values_dict.items())
                     for i in range(len(items_list)):
-                        if 10 < items_list[i][0] < 500: # El primer valor que este en este rango lo guardamos
+                        if 10 < items_list[i][0] < 500 and items_list[i][1] >= 10: # El primer valor que este en este rango y con mas de 10 incidencias lo guardamos
                             measure.value = items_list[i][0]
                             break
 
