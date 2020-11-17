@@ -19,7 +19,7 @@ class LoginSerializer(serializers.Serializer):
 class UserDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'email', 'first_name', 'last_name', 'cedula', 'type')
+        fields = ('id', 'considerations', 'first_name', 'last_name', 'cedula', 'type', 'max_threshold', 'min_threshold')
 
 
 class PatientDataSerializer(serializers.ModelSerializer):
