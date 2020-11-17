@@ -15,10 +15,10 @@ class MeasureAPI(APIView):
     def get(self, request):
         if 'user' in request.query_params:
             measures = Measure.objects.filter(patient=request.query_params['user'])
-            serializer = MeasureSerializer(measures, many=True)
+            serializer = MeasureSerializer(measures, many=True).order_by('-creation_date')
             return Response(http_response.format_response_success(serializer.data), status=status.HTTP_200_OK)
         else: 
-            measures = Measure.objects.all()
+            measures = Measure.objects.all().order_by('-creation_date')
             serializer = MeasureSerializer(measures, many=True)
             return Response(http_response.format_response_success(serializer.data), status=status.HTTP_200_OK)
 
