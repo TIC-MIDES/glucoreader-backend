@@ -6,13 +6,15 @@ from django.contrib.auth.models import BaseUserManager, PermissionsMixin
 class UserManager(BaseUserManager):
     """Helps Django work with the custom User model"""
 
-    def create_user(self, cedula, first_name, last_name, password=None):
+    def create_user(self, cedula, first_name, last_name, password, type, email=None, doctor=None, considerations=None,
+                    max_threshold=None, min_threshold=None):
         """Creates and saves a new user profile object"""
 
         if not cedula:
-            raise ValueError('El email es obligatorio')
+            raise ValueError('La cedula es obligatoria')
 
-        user = self.model(cedula=cedula, first_name=first_name, last_name=last_name)
+        user = self.model(cedula=cedula, first_name=first_name, last_name=last_name, type=type, email=email,
+                          doctor=doctor, considerations=considerations, max_threshold=max_threshold, min_threshold=min_threshold)
 
         user.set_password(password)  # esto hashea las passwords
         user.save(using=self._db)

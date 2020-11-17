@@ -31,5 +31,9 @@ class PatientDataSerializer(serializers.ModelSerializer):
 class RegisterUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ('email', 'first_name', 'last_name', 'cedula', 'password', 'type', 'doctor', 'considerations',
+                  'min_threshold', 'max_threshold')
+
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
 

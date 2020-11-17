@@ -42,6 +42,8 @@ class LoginAPI(KnoxLoginView):
 
         return Response(http_response.format_response_success(data))
 
+
+@permission_classes([IsAuthenticated])
 class RegisterAPI(APIView):
     def post(self, request):
         if 'doctor' not in request.data and request.data['type'] == 'P':
