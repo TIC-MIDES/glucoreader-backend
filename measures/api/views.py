@@ -65,7 +65,7 @@ class MeasureAPI(APIView):
             if 10 < measure.value < 500:
                 measure.save()
                 if measure.value < user.min_threshold or measure.value > user.max_threshold:
-                    if measure.patient.doctor and measure.patiend.doctor.email:
+                    if measure.patient.doctor and measure.patient.doctor.email:
                         Email.send_email(measure)
             else:
                 return Response(http_response.format_response_failure('Error al reconocer los digitos'),
