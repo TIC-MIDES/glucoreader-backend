@@ -9,6 +9,10 @@ import cloudinary.uploader
 import cloudinary.api
 from PIL import Image, ImageEnhance
 from io import BytesIO
+import cv2
+import io
+from imageio import imread
+import matplotlib.pyplot as plt
 
 def save_image_locally(cedula, image_base64):
     img_name = cedula + " > " + datetime.now().strftime("%d%m%Y %H:%M:%S:%f")
@@ -27,8 +31,89 @@ def save_image_locally(cedula, image_base64):
 def save_image_cloud(user, img_base64):
     data = {}
     img_name = datetime.now().strftime("%d-%m-%Y %H:%M:%S:%f")
-    #Chequear que se suba bien la foto a cloudinary
-    cloudinary_response = cloudinary.uploader.upload("data:image/png;base64," + img_base64, public_id=img_name,
+
+    image = imread(io.BytesIO(base64.b64decode(img_base64)))
+
+    # The standard stuff: image reading, grayscale conversion, blurring & edge detection
+    orig = image.copy()
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray = cv2.GaussianBlur(gray, (3, 3), 0)
+    edges = cv2.Canny(gray, 50, 200)
+
+    # Finding and sorting contours based on contour area
+    cnts = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:6]
+
+    vertices = []
+    for i, c in enumerate(cnts):
+        if i == 0:
+            # This is the largest contour
+            # For overlapping case the largest one will be the only one contour
+            peri = cv2.arcLength(cnts[i], True)
+            approx = cv2.approxPolyDP(cnts[i], 0.02 * peri, True)
+            vertices.append(approx)
+        elif i < len(cnts) - 1:
+            # Searches for any other inner contour
+            # Also filters out close contours generated due to thick line
+            if not np.isclose(cv2.contourArea(cnts[i]), cv2.contourArea(cnts[i+1]), atol=20000):
+                peri = cv2.arcLength(cnts[i+1], True)
+                approx = cv2.approxPolyDP(cnts[i+1], 0.02 * peri, True)
+                vertices.append(approx)
+
+    if len(vertices) == 1:
+        # This case is where there is only one contour (the overlapping case)
+        # There are eight extreme points for two overlapping rectangles
+        # The distinct rectangles are colored in 'green' and 'red'
+        extLeft1 = tuple(vertices[0][vertices[0][:, :, 0].argmin()][0])
+        extRight1 = tuple(vertices[0][vertices[0][:, :, 0].argmax()][0])
+        extTop1 = tuple(vertices[0][vertices[0][:, :, 1].argmin()][0])
+        extBot1 = tuple(vertices[0][vertices[0][:, :, 1].argmax()][0])
+        mask = np.isin(vertices[0][:, :, 1],
+                    (extRight1, extLeft1, extTop1, extBot1))
+        indices = np.where(mask)
+        vertices = np.delete(vertices[0], indices, 0)
+        extLeft2 = tuple(vertices[vertices[:, :, 0].argmin()][0])
+        extRight2 = tuple(vertices[vertices[:, :, 0].argmax()][0])
+        extTop2 = tuple(vertices[vertices[:, :, 1].argmin()][0])
+        extBot2 = tuple(vertices[vertices[:, :, 1].argmax()][0])
+
+        x, y, w, h = cv2.boundingRect(
+            np.array([extLeft1, extLeft2, extRight1, extRight2]))
+        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        x, y, w, h = cv2.boundingRect(
+            np.array([extTop1, extTop2, extBot1, extBot2]))
+        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
+    else:
+        # This case is where there are inner rectangle (the embedded case)
+        # The distinct rectangles are colored in 'green' and 'red'
+        x, y, w, h = cv2.boundingRect(vertices[0])
+        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        x, y, w, h = cv2.boundingRect(vertices[1])
+        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
+
+    roi = image[y:y+h, x:x+w]
+
+    im = Image.fromarray(np.uint8(roi))
+    basesize = 300 # Tamaño 
+    percent = 1
+    if im.height > basesize and im.height > im.width:
+        percent = float((basesize/float(im.height)))
+    elif im.width > basesize:
+        percent = float(basesize/float(im.width))
+    height = int(im.height * percent)
+    width = int(im.width * percent)
+    im.thumbnail((width, height), Image.ANTIALIAS)
+    byte_io = BytesIO()
+    im.save(byte_io, 'PNG')
+    byte_io.seek(0)
+
+    # cv2.imshow("Input", roi)
+    # cv2.imshow("Contour", image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
+    cloudinary_response = cloudinary.uploader.upload(byte_io, public_id=img_name,
                                                      folder=f'Measures/{user.cedula}')
     data['patient'] = user.id
     data['photo'] = cloudinary_response['url']
