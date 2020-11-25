@@ -108,10 +108,10 @@ def save_image_cloud(user, img_base64):
     im.save(byte_io, 'PNG')
     byte_io.seek(0)
 
-    cv2.imshow("Input", roi)
-    cv2.imshow("Contour", image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow("Input", roi)
+    # cv2.imshow("Contour", image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
     cloudinary_response = cloudinary.uploader.upload(byte_io, public_id=img_name,
                                                      folder=f'Measures/{user.cedula}')
