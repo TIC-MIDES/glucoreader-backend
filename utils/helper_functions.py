@@ -43,7 +43,7 @@ def save_image_cloud(user, img_base64):
     # Finding and sorting contours based on contour area
     cnts = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:6]
+    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
 
     vertices = []
     max_rectangle = 0
