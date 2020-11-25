@@ -46,20 +46,16 @@ def save_image_cloud(user, img_base64):
     cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:6]
 
     vertices = []
+    max_rectangle = 0
     for i, c in enumerate(cnts):
-        if i == 0:
-            # This is the largest contour
-            # For overlapping case the largest one will be the only one contour
-            peri = cv2.arcLength(cnts[i], True)
-            approx = cv2.approxPolyDP(cnts[i], 0.02 * peri, True)
-            vertices.append(approx)
-        elif i < len(cnts) - 1:
-            # Searches for any other inner contour
-            # Also filters out close contours generated due to thick line
-            if not np.isclose(cv2.contourArea(cnts[i]), cv2.contourArea(cnts[i+1]), atol=20000):
-                peri = cv2.arcLength(cnts[i+1], True)
-                approx = cv2.approxPolyDP(cnts[i+1], 0.02 * peri, True)
-                vertices.append(approx)
+        peri = cv2.arcLength(cnts[i], True)
+        approx = cv2.approxPolyDP(cnts[i], 0.02 * peri, True)
+        x, y, w, h = cv2.boundingRect(approx)
+        if w>h and w*h > max_rectangle:
+            max_rectangle = w*h
+            rectangle = approx
+      
+    vertices.append(rectangle)
 
     if len(vertices) == 1:
         # This case is where there is only one contour (the overlapping case)
@@ -81,7 +77,7 @@ def save_image_cloud(user, img_base64):
         x, y, w, h = cv2.boundingRect(
             np.array([extLeft1, extLeft2, extRight1, extRight2]))
         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        x, y, w, h = cv2.boundingRect(
+        x2, y2, w2, h2 = cv2.boundingRect(
             np.array([extTop1, extTop2, extBot1, extBot2]))
         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
     else:
@@ -91,7 +87,11 @@ def save_image_cloud(user, img_base64):
         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
         x, y, w, h = cv2.boundingRect(vertices[1])
         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
-
+    if x2 < x and y2 >= y:
+        x = x2
+        y = y2
+        w = w2
+        h = h2
     roi = image[y:y+h, x:x+w]
 
     im = Image.fromarray(np.uint8(roi))
@@ -108,10 +108,10 @@ def save_image_cloud(user, img_base64):
     im.save(byte_io, 'PNG')
     byte_io.seek(0)
 
-    # cv2.imshow("Input", roi)
-    # cv2.imshow("Contour", image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+    cv2.imshow("Input", roi)
+    cv2.imshow("Contour", image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
     cloudinary_response = cloudinary.uploader.upload(byte_io, public_id=img_name,
                                                      folder=f'Measures/{user.cedula}')
