@@ -38,7 +38,7 @@ def save_image_cloud(user, img_base64):
     orig = image.copy()
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (3, 3), 0)
-    edges = cv2.Canny(gray, 50, 200)
+    edges = cv2.Canny(gray, 10, 200)
 
     # Finding and sorting contours based on contour area
     cnts = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -51,47 +51,17 @@ def save_image_cloud(user, img_base64):
         peri = cv2.arcLength(cnts[i], True)
         approx = cv2.approxPolyDP(cnts[i], 0.02 * peri, True)
         x, y, w, h = cv2.boundingRect(approx)
-        if w>h and w*h > max_rectangle:
-            max_rectangle = w*h
-            rectangle = approx
-      
-    vertices.append(rectangle)
+        if len(approx) == 4:
+            x, y, w, h = cv2.boundingRect(approx)
+            if w>h and w*h > max_rectangle:
+                max_rectangle = w*h
+                rectangle = approx
+                cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)       
+                if not vertices:
+                    vertices.append(rectangle)
+                else:
+                    vertices[0] = rectangle
 
-    if len(vertices) == 1:
-        # This case is where there is only one contour (the overlapping case)
-        # There are eight extreme points for two overlapping rectangles
-        # The distinct rectangles are colored in 'green' and 'red'
-        extLeft1 = tuple(vertices[0][vertices[0][:, :, 0].argmin()][0])
-        extRight1 = tuple(vertices[0][vertices[0][:, :, 0].argmax()][0])
-        extTop1 = tuple(vertices[0][vertices[0][:, :, 1].argmin()][0])
-        extBot1 = tuple(vertices[0][vertices[0][:, :, 1].argmax()][0])
-        mask = np.isin(vertices[0][:, :, 1],
-                    (extRight1, extLeft1, extTop1, extBot1))
-        indices = np.where(mask)
-        vertices = np.delete(vertices[0], indices, 0)
-        extLeft2 = tuple(vertices[vertices[:, :, 0].argmin()][0])
-        extRight2 = tuple(vertices[vertices[:, :, 0].argmax()][0])
-        extTop2 = tuple(vertices[vertices[:, :, 1].argmin()][0])
-        extBot2 = tuple(vertices[vertices[:, :, 1].argmax()][0])
-
-        x, y, w, h = cv2.boundingRect(
-            np.array([extLeft1, extLeft2, extRight1, extRight2]))
-        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        x2, y2, w2, h2 = cv2.boundingRect(
-            np.array([extTop1, extTop2, extBot1, extBot2]))
-        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
-    else:
-        # This case is where there are inner rectangle (the embedded case)
-        # The distinct rectangles are colored in 'green' and 'red'
-        x, y, w, h = cv2.boundingRect(vertices[0])
-        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        x, y, w, h = cv2.boundingRect(vertices[1])
-        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
-    if x2 < x and y2 >= y:
-        x = x2
-        y = y2
-        w = w2
-        h = h2
     roi = image[y:y+h, x:x+w]
 
     im = Image.fromarray(np.uint8(roi))
@@ -108,8 +78,10 @@ def save_image_cloud(user, img_base64):
     im.save(byte_io, 'PNG')
     byte_io.seek(0)
 
+
+    # imS = cv2.resize(image, (340, 640))                    # Resize image
     # cv2.imshow("Input", roi)
-    # cv2.imshow("Contour", image)
+    # cv2.imshow("Contour", imS)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
 
