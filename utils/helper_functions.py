@@ -36,7 +36,7 @@ def save_image_cloud(user, img_base64):
 
     orig = image.copy()
 
-    template = cv2.imread("./static/glucometro4.png", 0)  # real_target_common.png
+    template = cv2.imread("./static/glucometro.png", 0)  # real_target_common.png
 
     # cv2.imshow("Image", template)
     # cv2.waitKey()
@@ -54,7 +54,7 @@ def save_image_cloud(user, img_base64):
     top_left = min_loc  # Change to max_loc for all except for TM_SQDIFF
     bottom_right = (top_left[0] + width, top_left[1] + height)
     cv2.rectangle(image, top_left, bottom_right, (255, 0, 0), 2)
-    image = image[top_left[1]:top_left[1]+height, top_left[0]:top_left[0]+width]
+    # image = image[top_left[1]:top_left[1]+height, top_left[0]:top_left[0]+width]
     # cv2.imshow("Matched image", image)
     # cv2.waitKey()
     # cv2.destroyAllWindows()
@@ -149,7 +149,8 @@ def save_image_cloud(user, img_base64):
     byte_original = BytesIO()
     original.save(byte_original, 'PNG')
     byte_original.seek(0)
-    cloudinary_response = cloudinary.uploader.upload(byte_original, public_id=img_name,
+    
+    cloudinary_response = cloudinary.uploader.upload(byte_io, public_id=img_name,
                                                      folder=f'Measures/{user.cedula}')
     data['patient'] = user.id
     data['photo'] = cloudinary_response['url']
