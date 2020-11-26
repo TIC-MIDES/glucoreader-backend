@@ -35,9 +35,63 @@ def save_image_cloud(user, img_base64):
     image = imread(io.BytesIO(base64.b64decode(img_base64)))
 
     orig = image.copy()
+
+    template = cv2.imread("./static/glucometro.png", 0)  # real_target_common.png
+
+    # cv2.imshow("Image", template)
+    # cv2.waitKey()
+    # cv2.destroyAllWindows()
+    img_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+
+    height, width = template.shape[::]
+
+    res = cv2.matchTemplate(img_gray, template, cv2.TM_SQDIFF)
+    plt.imshow(res, cmap='gray')
+
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+
+    top_left = min_loc  # Change to max_loc for all except for TM_SQDIFF
+    bottom_right = (top_left[0] + width, top_left[1] + height)
+    cv2.rectangle(image, top_left, bottom_right, (255, 0, 0), 2)
+    image = image[top_left[1]:top_left[1]+height, top_left[0]:top_left[0]+width]
+    # cv2.imshow("Matched image", image)
+    # cv2.waitKey()
+    # cv2.destroyAllWindows()
+
+    # # convert to grayscale
+    # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # edged = cv2.Canny(image, 170, 490)
+    # # Apply adaptive threshold
+    # thresh = cv2.adaptiveThreshold(edged, 255, 1, 1, 11, 2)
+
+    # # apply some dilation and erosion to join the gaps - change iteration to detect more or less area's
+    # thresh = cv2.dilate(thresh, None, iterations=1)
+    # thresh = cv2.erode(thresh, None, iterations=1)
+
+    # # Find the contours
+    # contours, hierarchy = cv2.findContours(thresh,
+    #                                        cv2.RETR_TREE,
+    #                                        cv2.CHAIN_APPROX_SIMPLE)
+    # # For each contour, find the bounding rectangle and draw it
+    # for cnt in contours:
+    #     x, y, w, h = cv2.boundingRect(cnt)
+    #     cv2.rectangle(image,
+    #                   (x, y), (x+w, y+h),
+    #                   (0, 255, 0),
+    #                   2)
+
+
+    # cv2.imshow('img', thresh)
+    # cv2.imshow('img2', image)
+
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    blurred= cv2.GaussianBlur(gray, (7, 7), 1)
-    edges = cv2.Canny(blurred, 10, 200)
+    blurred= cv2.GaussianBlur(gray, (5, 5), 0)
+    edges = cv2.Canny(blurred, 0, 255)
 
     # Finding and sorting contours based on contour area
     cnts = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -50,6 +104,7 @@ def save_image_cloud(user, img_base64):
         approx = cv2.approxPolyDP(cnts[i], 0.02 * peri, True)
         if len(approx) >= 4:
             x, y, w, h = cv2.boundingRect(approx)
+            # cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
             if w/h>1.4 and w/h<1.8 and w*h>max_rectangle: # RECTANGLE RATIO
                 max_rectangle = w*h
                 rectangle = approx
