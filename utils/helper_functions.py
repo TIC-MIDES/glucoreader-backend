@@ -53,13 +53,13 @@ def save_image_cloud(user, img_base64):
             if w*h > max_rectangle:
                 max_rectangle = w*h
                 rectangle = approx
-                cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
                 if not vertices:
                     vertices.append(rectangle)
                 else:
                     vertices[0] = rectangle
     if vertices:
         x, y, w, h = cv2.boundingRect(vertices[0])
+        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
     roi = image[y:y+h, x:x+w]
 
     im = Image.fromarray(np.uint8(roi))
