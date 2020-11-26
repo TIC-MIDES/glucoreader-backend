@@ -50,7 +50,7 @@ def save_image_cloud(user, img_base64):
         approx = cv2.approxPolyDP(cnts[i], 0.02 * peri, True)
         if len(approx) >= 4:
             x, y, w, h = cv2.boundingRect(approx)
-            if w/h > 1 and w/h<1.8 and w*h>max_rectangle: # RECTANGLE RATIO
+            if w/h>1.4 and w/h<1.8 and w*h>max_rectangle: # RECTANGLE RATIO
                 max_rectangle = w*h
                 rectangle = approx
                 if not vertices:
