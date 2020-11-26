@@ -61,7 +61,8 @@ def save_image_cloud(user, img_base64):
                     vertices.append(rectangle)
                 else:
                     vertices[0] = rectangle
-
+    if vertices:
+        x, y, w, h = cv2.boundingRect(vertices[0])
     roi = image[y:y+h, x:x+w]
 
     im = Image.fromarray(np.uint8(roi))
