@@ -144,7 +144,12 @@ def save_image_cloud(user, img_base64):
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
 
-    cloudinary_response = cloudinary.uploader.upload(byte_io, public_id=img_name,
+    original = Image.fromarray(np.uint8(orig))
+
+    byte_original = BytesIO()
+    original.save(byte_original, 'PNG')
+    byte_original.seek(0)
+    cloudinary_response = cloudinary.uploader.upload(byte_original, public_id=img_name,
                                                      folder=f'Measures/{user.cedula}')
     data['patient'] = user.id
     data['photo'] = cloudinary_response['url']
