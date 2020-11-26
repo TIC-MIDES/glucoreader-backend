@@ -36,7 +36,7 @@ def save_image_cloud(user, img_base64):
 
     orig = image.copy()
 
-    template = cv2.imread("./static/glucometro.png", 0)  # real_target_common.png
+    template = cv2.imread("./static/glucometro4.png", 0)  # real_target_common.png
 
     # cv2.imshow("Image", template)
     # cv2.waitKey()
@@ -90,9 +90,13 @@ def save_image_cloud(user, img_base64):
     # cv2.destroyAllWindows()
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    blurred= cv2.GaussianBlur(gray, (5, 5), 0)
-    edges = cv2.Canny(blurred, 0, 255)
 
+    blurred = cv2.GaussianBlur(gray, (3, 3), 0)
+    edges = cv2.Canny(blurred, 0, 255, 1)
+        
+    # thresh = cv2.adaptiveThreshold(edges, 255, 1, 1, 11, 2)
+    # thresh = cv2.dilate(thresh, None, iterations=1)
+    # thresh = cv2.erode(thresh, None, iterations=0)
     # Finding and sorting contours based on contour area
     cnts = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
@@ -106,6 +110,7 @@ def save_image_cloud(user, img_base64):
             x, y, w, h = cv2.boundingRect(approx)
             # cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
             if w/h>1.4 and w/h<1.8 and w*h>max_rectangle: # RECTANGLE RATIO
+                # cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
                 max_rectangle = w*h
                 rectangle = approx
                 if not vertices:
