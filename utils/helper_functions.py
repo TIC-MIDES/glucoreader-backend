@@ -34,29 +34,26 @@ def save_image_cloud(user, img_base64):
 
     image = imread(io.BytesIO(base64.b64decode(img_base64)))
 
-    # The standard stuff: image reading, grayscale conversion, blurring & edge detection
     orig = image.copy()
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    gray = cv2.GaussianBlur(gray, (3, 3), 0)
-    edges = cv2.Canny(gray, 10, 200)
+    blurred= cv2.GaussianBlur(gray, (3, 3), 0)
+    edges = cv2.Canny(blurred, 10, 200)
 
     # Finding and sorting contours based on contour area
     cnts = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
 
     vertices = []
     max_rectangle = 0
     for i, c in enumerate(cnts):
         peri = cv2.arcLength(cnts[i], True)
         approx = cv2.approxPolyDP(cnts[i], 0.02 * peri, True)
-        x, y, w, h = cv2.boundingRect(approx)
-        if len(approx) == 4:
+        if len(approx) >= 4:
             x, y, w, h = cv2.boundingRect(approx)
-            if w>h and w*h > max_rectangle:
+            if w*h > max_rectangle:
                 max_rectangle = w*h
                 rectangle = approx
-                cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)       
+                cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
                 if not vertices:
                     vertices.append(rectangle)
                 else:
