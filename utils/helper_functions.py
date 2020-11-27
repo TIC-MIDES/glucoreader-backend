@@ -9,6 +9,9 @@ import cloudinary.uploader
 import cloudinary.api
 from PIL import Image, ImageEnhance
 from io import BytesIO
+import cv2
+import io
+from imageio import imread
 
 def save_image_locally(cedula, image_base64):
     img_name = cedula + " > " + datetime.now().strftime("%d%m%Y %H:%M:%S:%f")
@@ -27,20 +30,90 @@ def save_image_locally(cedula, image_base64):
 def save_image_cloud(user, img_base64):
     data = {}
     img_name = datetime.now().strftime("%d-%m-%Y %H:%M:%S:%f")
-    #Chequear que se suba bien la foto a cloudinary
-    cloudinary_response = cloudinary.uploader.upload("data:image/png;base64," + img_base64, public_id=img_name,
+
+    image = imread(io.BytesIO(base64.b64decode(img_base64)))
+
+    orig = image.copy()
+
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    blurred = cv2.GaussianBlur(gray, (3, 3), 0)
+    edges = cv2.Canny(blurred, 0, 255, 1)
+        
+    # thresh = cv2.adaptiveThreshold(edges, 255, 1, 1, 11, 2)
+    # thresh = cv2.dilate(thresh, None, iterations=1)
+    # thresh = cv2.erode(thresh, None, iterations=0)
+    # Finding and sorting contours based on contour area
+    cnts = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+
+    vertices = []
+    min_area = 10000
+    min_ratio = 1.4
+    max_ratio = 1.8
+    for i, c in enumerate(cnts):
+        peri = cv2.arcLength(cnts[i], True)
+        approx = cv2.approxPolyDP(cnts[i], 0.02 * peri, True)
+        if len(approx) >= 4:
+            x, y, w, h = cv2.boundingRect(approx)
+            # cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            if w/h>min_ratio and w/h<max_ratio and w*h>min_area: # RECTANGLE RATIO
+                # cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                max_rectangle = w*h
+                rectangle = approx
+                vertices.append(rectangle)
+                # if not vertices:
+                #     vertices.append(rectangle)
+                # else:
+                #     vertices[0] = rectangle
+    pictures = []
+    if vertices:
+        for vertice in vertices:
+            x, y, w, h = cv2.boundingRect(vertice)
+            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            roi = image[y:y+h, x:x+w]
+
+            im = Image.fromarray(np.uint8(roi))
+            basesize = 300 # Tamaño 
+            percent = 1
+            if im.height > basesize and im.height > im.width:
+                percent = float((basesize/float(im.height)))
+            elif im.width > basesize:
+                percent = float(basesize/float(im.width))
+            height = int(im.height * percent)
+            width = int(im.width * percent)
+            im.thumbnail((width, height), Image.ANTIALIAS)
+            byte_io = BytesIO()
+            im.save(byte_io, 'PNG')
+            byte_io.seek(0)
+            pictures.append(byte_io)
+
+    # imS = cv2.resize(image, (340, 640))                    # Resize image
+    # cv2.imshow("Lines", edges)
+    # cv2.imshow("Input", roi)
+    # cv2.imshow("Contour", imS)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
+    original = Image.fromarray(np.uint8(orig))
+
+    byte_original = BytesIO()
+    original.save(byte_original, 'PNG')
+    byte_original.seek(0)
+    
+    cloudinary_response = cloudinary.uploader.upload(pictures[0], public_id=img_name,
                                                      folder=f'Measures/{user.cedula}')
     data['patient'] = user.id
     data['photo'] = cloudinary_response['url']
-    return data
+    return data, pictures
 
 
-def recognize_digits(img_url):
-    img = urllib.urlopen(img_url)
+def recognize_digits(img):
+    # img = urllib.urlopen(img_url)
 
-    im = Image.open(BytesIO(img.read()))
+    im = Image.open(img)
     enhancer = ImageEnhance.Brightness(im)
-    factor = range(1, 6, 1) # change the brightness
+    factor = range(2, 6, 1) # change the brightness
 
     threshold_range = range(20, 80, 10)
     threshold_range2 = range(-40, 20, 10)
