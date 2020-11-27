@@ -77,12 +77,15 @@ class MeasureAPI(APIView):
                         return Response(http_response.format_response_failure('Error al reconocer los digitos'),
                                         status=status.HTTP_400_BAD_REQUEST)
                     if found:
-                        picture.seek(0)
-                        cloudinary_response = cloudinary.uploader.upload(picture, public_id=img_name,
-                                                                        folder=f'Measures/{user.cedula}')
-                        measure.photo = cloudinary_response['url']
-                        measure.save()
-                        break
+                        if not 10 < measure.value < 500:
+                            found = False
+                        else:
+                            picture.seek(0)
+                            cloudinary_response = cloudinary.uploader.upload(picture, public_id=img_name,
+                                                                            folder=f'Measures/{user.cedula}')
+                            measure.photo = cloudinary_response['url']
+                            measure.save()
+                            break
             else: 
                 return Response(http_response.format_response_failure(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
             if 10 < measure.value < 500:
