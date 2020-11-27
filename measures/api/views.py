@@ -60,7 +60,7 @@ class MeasureAPI(APIView):
                         cloudinary_response = cloudinary.uploader.upload("data:image/png;base64," + image_base64, public_id=img_name,
                                                                          folder=f'Measures/{user.cedula}')
                         measure.photo = cloudinary_response['url']
-
+                        measure.save()
                         return Response(http_response.format_response_failure('Error al reconocer los digitos'),
                                         status=status.HTTP_400_BAD_REQUEST)
                 elif len(values_dict) == 1:
@@ -70,6 +70,7 @@ class MeasureAPI(APIView):
                     cloudinary_response = cloudinary.uploader.upload("data:image/png;base64," + image_base64, public_id=img_name,
                                                                         folder=f'Measures/{user.cedula}')
                     measure.photo = cloudinary_response['url']
+                    measure.save()
                     return Response(http_response.format_response_failure('Error al reconocer los digitos'),
                                     status=status.HTTP_400_BAD_REQUEST)
             else: 
