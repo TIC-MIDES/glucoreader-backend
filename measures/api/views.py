@@ -74,7 +74,7 @@ class MeasureAPI(APIView):
                             break
             else: 
                 return Response(http_response.format_response_failure(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
-            if 10 < measure.value < 500:
+            if measure.value and 10 < measure.value < 500:
                 measure.save()
                 if measure.value < user.min_threshold or measure.value > user.max_threshold:
                     if measure.patient.doctor and measure.patient.doctor.email:
@@ -84,6 +84,7 @@ class MeasureAPI(APIView):
                 cloudinary_response = cloudinary.uploader.upload("data:image/png;base64," + image_base64, public_id=img_name,
                                                                 folder=f'Measures/{user.cedula}')
                 measure.photo = cloudinary_response['url']
+                measure.value = None
                 measure.save()
                 return Response(http_response.format_response_failure('Error al reconocer los digitos'),
                                 status=status.HTTP_400_BAD_REQUEST)

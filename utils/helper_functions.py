@@ -38,8 +38,16 @@ def save_image_cloud(user, img_base64):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     blurred = cv2.GaussianBlur(gray, (3, 3), 0)
-    edges = cv2.Canny(blurred, 0, 255, 1)
-        
+
+    # AUTO CANNY VALUE
+    sigma = 0.33
+    v = np.median(image)
+	# apply automatic Canny edge detection using the computed median
+    lower = int(max(0, (1.0 - sigma) * v))
+    upper = int(min(255, (1.0 + sigma) * v))
+    edges = cv2.Canny(blurred, lower, upper)
+
+
     # thresh = cv2.adaptiveThreshold(edges, 255, 1, 1, 11, 2)
     # thresh = cv2.dilate(thresh, None, iterations=1)
     # thresh = cv2.erode(thresh, None, iterations=0)
@@ -48,8 +56,8 @@ def save_image_cloud(user, img_base64):
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
 
     vertices = []
-    min_area = 10000
-    min_ratio = 1.4
+    min_area = 20000
+    min_ratio = 1.1
     max_ratio = 1.8
     for i, c in enumerate(cnts):
         peri = cv2.arcLength(cnts[i], True)
@@ -88,21 +96,26 @@ def save_image_cloud(user, img_base64):
             byte_io.seek(0)
             pictures.append(byte_io)
 
-    # imS = cv2.resize(image, (340, 640))                    # Resize image
-    # cv2.imshow("Lines", edges)
-    # cv2.imshow("Input", roi)
-    # cv2.imshow("Contour", imS)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+        # imS = cv2.resize(image, (340, 640))                    # Resize image
+        # imL = cv2.resize(edges, (340, 640))                    # Resize image
+
+        # cv2.imshow("Lines", imL)
+        # cv2.imshow("Input", roi)
+        # cv2.imshow("Contour", imS)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
 
     original = Image.fromarray(np.uint8(orig))
 
     byte_original = BytesIO()
     original.save(byte_original, 'PNG')
     byte_original.seek(0)
-    
-    cloudinary_response = cloudinary.uploader.upload(pictures[0], public_id=img_name,
-                                                     folder=f'Measures/{user.cedula}')
+    if pictures:
+        cloudinary_response = cloudinary.uploader.upload(pictures[0], public_id=img_name,
+                                                        folder=f'Measures/{user.cedula}')
+    else: 
+        cloudinary_response = cloudinary.uploader.upload("data:image/png;base64," + img_base64, public_id=img_name,
+                                                         folder=f'Measures/{user.cedula}')
     data['patient'] = user.id
     data['photo'] = cloudinary_response['url']
     return data, pictures
