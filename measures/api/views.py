@@ -32,47 +32,57 @@ class MeasureAPI(APIView):
             image_base64 = request.data['measure_picture']
             if image_base64 is not None:
                 #Guardar en Cloudinary
-                data = hf.save_image_cloud(user, image_base64)
+                data, pictures = hf.save_image_cloud(user, image_base64)
                 #Guardar en filesystem
                 # hf.save_image(user.cedula, image_base64)
             else:
                 return HttpResponseBadRequest('No se pudo subir la imagen')
 
             serializer = MeasureSerializer(data=data)
+            img_name = datetime.now().strftime("%d-%m-%Y %H:%M:%S:%f")
             if serializer.is_valid():
                 measure = serializer.create(serializer.validated_data)
                 #Reconocer valor de la medida y guardar resultado:
-                results_list = hf.recognize_digits(img_url=measure.photo)
-                print(results_list)
-                values_dict = hf.build_dict(results_list) # La medida es la key y el numero de coincidencias es el value
-                print(values_dict)
+                found = False
+                for picture in pictures:
+                    results_list = hf.recognize_digits(img=picture)
+                    print(results_list)
+                    values_dict = hf.build_dict(results_list) # La medida es la key y el numero de coincidencias es el value
+                    print(values_dict)
 
-                if len(values_dict) > 1:    # Se reconocieron digitos distintos
-                    ordered_values_dict = {k: v for k, v in sorted(values_dict.items(), key=lambda item: item[1], reverse=True)}    #Ordeno el diccionario
-                    items_list = list(ordered_values_dict.items())
-                    for i in range(len(items_list)):
-                        if 10 < items_list[i][0] < 500 and items_list[i][1] >= 10: # El primer valor que este en este rango y con mas de 10 incidencias lo guardamos
-                            measure.value = items_list[i][0]
-                            break
+                    if len(values_dict) > 1:    # Se reconocieron digitos distintos
+                        ordered_values_dict = {k: v for k, v in sorted(values_dict.items(), key=lambda item: item[1], reverse=True)}    #Ordeno el diccionario
+                        items_list = list(ordered_values_dict.items())
+                        for i in range(len(items_list)):
+                            if 10 < items_list[i][0] < 500 and items_list[i][1] >= 10: # El primer valor que este en este rango y con mas de 10 incidencias lo guardamos
+                                measure.value = items_list[i][0]
+                                found = True
+                                break
 
-                    if not measure.value:
-                        img_name = datetime.now().strftime("%d-%m-%Y %H:%M:%S:%f")
+                        if not measure.value:
+                            cloudinary_response = cloudinary.uploader.upload("data:image/png;base64," + image_base64, public_id=img_name,
+                                                                            folder=f'Measures/{user.cedula}')
+                            measure.photo = cloudinary_response['url']
+                            measure.save()
+                            return Response(http_response.format_response_failure('Error al reconocer los digitos'),
+                                            status=status.HTTP_400_BAD_REQUEST)
+                    elif len(values_dict) == 1:
+                        found = True
+                        measure.value = list(values_dict.keys())[0] # Se guarda el unico valor reconocido
+                    else:
                         cloudinary_response = cloudinary.uploader.upload("data:image/png;base64," + image_base64, public_id=img_name,
-                                                                         folder=f'Measures/{user.cedula}')
+                                                                            folder=f'Measures/{user.cedula}')
                         measure.photo = cloudinary_response['url']
                         measure.save()
                         return Response(http_response.format_response_failure('Error al reconocer los digitos'),
                                         status=status.HTTP_400_BAD_REQUEST)
-                elif len(values_dict) == 1:
-                    measure.value = list(values_dict.keys())[0] # Se guarda el unico valor reconocido
-                else:
-                    img_name = datetime.now().strftime("%d-%m-%Y %H:%M:%S:%f")
-                    cloudinary_response = cloudinary.uploader.upload("data:image/png;base64," + image_base64, public_id=img_name,
+                    if found:
+                        picture.seek(0)
+                        cloudinary_response = cloudinary.uploader.upload(picture, public_id=img_name,
                                                                         folder=f'Measures/{user.cedula}')
-                    measure.photo = cloudinary_response['url']
-                    measure.save()
-                    return Response(http_response.format_response_failure('Error al reconocer los digitos'),
-                                    status=status.HTTP_400_BAD_REQUEST)
+                        measure.photo = cloudinary_response['url']
+                        measure.save()
+                        break
             else: 
                 return Response(http_response.format_response_failure(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
             if 10 < measure.value < 500:

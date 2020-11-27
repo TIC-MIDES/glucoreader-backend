@@ -48,41 +48,45 @@ def save_image_cloud(user, img_base64):
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
 
     vertices = []
-    max_rectangle = 0
+    min_area = 10000
+    min_ratio = 1.4
+    max_ratio = 1.8
     for i, c in enumerate(cnts):
         peri = cv2.arcLength(cnts[i], True)
         approx = cv2.approxPolyDP(cnts[i], 0.02 * peri, True)
         if len(approx) >= 4:
             x, y, w, h = cv2.boundingRect(approx)
             # cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            if w/h>1.4 and w/h<1.8 and w*h>max_rectangle: # RECTANGLE RATIO
+            if w/h>min_ratio and w/h<max_ratio and w*h>min_area: # RECTANGLE RATIO
                 # cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
                 max_rectangle = w*h
                 rectangle = approx
-                if not vertices:
-                    vertices.append(rectangle)
-                else:
-                    vertices[0] = rectangle
-    
+                vertices.append(rectangle)
+                # if not vertices:
+                #     vertices.append(rectangle)
+                # else:
+                #     vertices[0] = rectangle
+    pictures = []
     if vertices:
-        x, y, w, h = cv2.boundingRect(vertices[0])
-        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-    roi = image[y:y+h, x:x+w]
+        for vertice in vertices:
+            x, y, w, h = cv2.boundingRect(vertice)
+            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            roi = image[y:y+h, x:x+w]
 
-    im = Image.fromarray(np.uint8(roi))
-    basesize = 300 # Tamaño 
-    percent = 1
-    if im.height > basesize and im.height > im.width:
-        percent = float((basesize/float(im.height)))
-    elif im.width > basesize:
-        percent = float(basesize/float(im.width))
-    height = int(im.height * percent)
-    width = int(im.width * percent)
-    im.thumbnail((width, height), Image.ANTIALIAS)
-    byte_io = BytesIO()
-    im.save(byte_io, 'PNG')
-    byte_io.seek(0)
-
+            im = Image.fromarray(np.uint8(roi))
+            basesize = 300 # Tamaño 
+            percent = 1
+            if im.height > basesize and im.height > im.width:
+                percent = float((basesize/float(im.height)))
+            elif im.width > basesize:
+                percent = float(basesize/float(im.width))
+            height = int(im.height * percent)
+            width = int(im.width * percent)
+            im.thumbnail((width, height), Image.ANTIALIAS)
+            byte_io = BytesIO()
+            im.save(byte_io, 'PNG')
+            byte_io.seek(0)
+            pictures.append(byte_io)
 
     # imS = cv2.resize(image, (340, 640))                    # Resize image
     # cv2.imshow("Lines", edges)
@@ -97,19 +101,19 @@ def save_image_cloud(user, img_base64):
     original.save(byte_original, 'PNG')
     byte_original.seek(0)
     
-    cloudinary_response = cloudinary.uploader.upload(byte_io, public_id=img_name,
+    cloudinary_response = cloudinary.uploader.upload(pictures[0], public_id=img_name,
                                                      folder=f'Measures/{user.cedula}')
     data['patient'] = user.id
     data['photo'] = cloudinary_response['url']
-    return data
+    return data, pictures
 
 
-def recognize_digits(img_url):
-    img = urllib.urlopen(img_url)
+def recognize_digits(img):
+    # img = urllib.urlopen(img_url)
 
-    im = Image.open(BytesIO(img.read()))
+    im = Image.open(img)
     enhancer = ImageEnhance.Brightness(im)
-    factor = range(1, 6, 1) # change the brightness
+    factor = range(2, 6, 1) # change the brightness
 
     threshold_range = range(20, 80, 10)
     threshold_range2 = range(-40, 20, 10)
