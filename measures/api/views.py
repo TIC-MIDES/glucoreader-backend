@@ -8,7 +8,10 @@ from utils import http_response
 from rest_framework.exceptions import *
 from utils import helper_functions as hf
 from utils.email import Email
-
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+from datetime import datetime
 
 class MeasureAPI(APIView):
 
@@ -53,11 +56,20 @@ class MeasureAPI(APIView):
                             break
 
                     if not measure.value:
+                        img_name = datetime.now().strftime("%d-%m-%Y %H:%M:%S:%f")
+                        cloudinary_response = cloudinary.uploader.upload("data:image/png;base64," + image_base64, public_id=img_name,
+                                                                         folder=f'Measures/{user.cedula}')
+                        measure.photo = cloudinary_response['url']
+
                         return Response(http_response.format_response_failure('Error al reconocer los digitos'),
                                         status=status.HTTP_400_BAD_REQUEST)
                 elif len(values_dict) == 1:
                     measure.value = list(values_dict.keys())[0] # Se guarda el unico valor reconocido
                 else:
+                    img_name = datetime.now().strftime("%d-%m-%Y %H:%M:%S:%f")
+                    cloudinary_response = cloudinary.uploader.upload("data:image/png;base64," + image_base64, public_id=img_name,
+                                                                        folder=f'Measures/{user.cedula}')
+                    measure.photo = cloudinary_response['url']
                     return Response(http_response.format_response_failure('Error al reconocer los digitos'),
                                     status=status.HTTP_400_BAD_REQUEST)
             else: 
