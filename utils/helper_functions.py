@@ -47,14 +47,20 @@ def save_image_cloud(user, img_base64):
     upper = int(min(255, (1.0 + sigma) * v))
     edges = cv2.Canny(blurred, lower, upper)
 
-
-    # thresh = cv2.adaptiveThreshold(edges, 255, 1, 1, 11, 2)
-    # thresh = cv2.dilate(thresh, None, iterations=1)
-    # thresh = cv2.erode(thresh, None, iterations=0)
+    thresh = cv2.adaptiveThreshold(edges, 255, 1, 1, 11, 2)
+    thresh = cv2.dilate(thresh, None, iterations=1)
+    thresh = cv2.erode(thresh, None, iterations=0)
     # Finding and sorting contours based on contour area
     cnts = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+    # imS = cv2.resize(image, (340, 640))                    # Resize image
+    # imL = cv2.resize(edges, (340, 640))                    # Resize image
 
+    # cv2.imshow("gray", gray)
+    # cv2.imshow("blurred", blurred)
+    # cv2.imshow("edges", edges)
+
+    # cv2.waitKey(0)
     vertices = []
     min_area = 20000
     min_ratio = 1.1
@@ -122,7 +128,7 @@ def save_image_cloud(user, img_base64):
 
 
 def recognize_digits(img):
-    # img = urllib.urlopen(img_url)
+    # img = urllib.urlopen(img)
 
     im = Image.open(img)
     enhancer = ImageEnhance.Brightness(im)

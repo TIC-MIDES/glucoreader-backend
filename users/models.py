@@ -6,7 +6,7 @@ from django.contrib.auth.models import BaseUserManager, PermissionsMixin
 class UserManager(BaseUserManager):
     """Helps Django work with the custom User model"""
 
-    def create_user(self, cedula, first_name, last_name, password, type, email=None, doctor=None, considerations=None,
+    def create_user(self, cedula, first_name, last_name, password, type='D', email=None, doctor=None, considerations=None,
                     max_threshold=None, min_threshold=None):
         """Creates and saves a new user profile object"""
 
