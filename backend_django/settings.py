@@ -160,3 +160,20 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
 MAILGUN_ACCESS_KEY = env("MAILGUN_API_KEY")
 MAILGUN_SERVER_NAME = env("MAILGUN_DOMAIN")
+
+
+import tensorflow as tf
+from utils.object_detection.utils import ops as utils_ops
+
+# patch tf1 into `utils.ops`
+utils_ops.tf = tf.compat.v1
+
+# Patch the location of gfile
+tf.gfile = tf.io.gfile
+
+def load_model(model_path):
+    model = tf.saved_model.load(model_path)
+    return model
+
+model = "./utils/model/inference_graph/saved_model/"
+detection_model = load_model(model)
