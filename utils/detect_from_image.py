@@ -102,5 +102,22 @@ def run_inference(image_path):
     img = Image.fromarray(image_np)
     img.show()
     print(output_dict)
-    return output_dict["detection_classes"]
+    digits = order_digits(output_dict)
+    return digits
 
+
+
+def order_digits(output_dict):
+  first_box =  output_dict["detection_boxes"][0][1]
+  second_box = output_dict["detection_boxes"][1][1]
+  third_box = output_dict["detection_boxes"][2][1]
+  if output_dict["detection_scores"][3] > 0.5:
+    boxes = [first_box, second_box, third_box]
+    index = sorted(range(len(boxes)), key=lambda k: boxes[k]) # devuelve los indices ordenados
+    print(index)
+    detection_classes = output_dict["detection_classes"]
+    digits = [detection_classes[index[0]], detection_classes[index[1]], detection_classes[index[2]]]
+    print(digits)
+    return digits
+  else:
+    return None

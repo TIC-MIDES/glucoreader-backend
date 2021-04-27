@@ -43,8 +43,14 @@ class MeasureAPI(APIView):
                 measure = serializer.create(serializer.validated_data)
 
                 measure_digits = run_inference(Image.open(requests.get(data['photo'], stream=True).raw))
-                value = float((measure_digits[0] * 100) + (measure_digits[1] * 10) + measure_digits[2])
-                measure.value = value
-                measure.save()
+                if measure_digits != None:
+                    value = float((measure_digits[0] * 100) + (measure_digits[1] * 10) + measure_digits[2])
+                    measure.value = value
+                    measure.save()
+                    response_data = MeasureSerializer(measure).data
+                    return Response(http_response.format_response_success(response_data), status=status.HTTP_200_OK)
+                else:
+                    return Response(http_response.format_response_failure('Error al reconocer los digitos'),
+                                status=status.HTTP_400_BAD_REQUEST)
         return Response(http_response.format_response_success("Ok"), status=status.HTTP_200_OK)
 
