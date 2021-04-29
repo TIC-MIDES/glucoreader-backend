@@ -111,7 +111,7 @@ def order_digits(output_dict):
   first_box =  output_dict["detection_boxes"][0][1]
   second_box = output_dict["detection_boxes"][1][1]
   third_box = output_dict["detection_boxes"][2][1]
-  if output_dict["detection_scores"][3] > 0.5:
+  if output_dict["detection_scores"][2] > 0.5:
     boxes = [first_box, second_box, third_box]
     index = sorted(range(len(boxes)), key=lambda k: boxes[k]) # devuelve los indices ordenados
     print(index)
