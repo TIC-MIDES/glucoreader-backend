@@ -2,7 +2,7 @@ from django.http import HttpResponseBadRequest
 from rest_framework.views import APIView
 from users.models import User
 from ..models import Measure
-from .serializer import MeasureSerializer
+from .serializer import MeasureSerializer, MeasureGraphSerializer
 from rest_framework.response import Response
 from utils import http_response
 from rest_framework.exceptions import *
@@ -15,6 +15,7 @@ from datetime import datetime
 from utils.detect_from_image import run_inference
 from PIL import Image
 import requests
+from rest_framework import generics
 
 class MeasureAPI(APIView):
 
@@ -54,3 +55,11 @@ class MeasureAPI(APIView):
                                 status=status.HTTP_400_BAD_REQUEST)
         return Response(http_response.format_response_success("Ok"), status=status.HTTP_200_OK)
 
+
+class GraphsAPI(generics.ListAPIView):
+    serializer_class = MeasureGraphSerializer
+
+    def get_queryset(self):
+        date_from = self.request.query_params.get('date_from', '2020-01-01')
+        return Measure.objects.filter(creation_date__gte=date_from,
+                                      patient_id=self.request.query_params.get('patient_id'))
